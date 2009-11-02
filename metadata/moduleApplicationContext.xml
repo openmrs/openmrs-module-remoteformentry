@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- Beans to add to the current Application context definition -->
+  
+<beans>
+	
+    <bean id="remoteFormEntryUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+    	<property name="mappings">
+            <props>
+	            <prop key="module/remoteformentry/import.form">importForm</prop>
+	            <prop key="module/remoteformentry/export.form">exportForm</prop>
+	            <prop key="module/remoteformentry/properties.form">propertiesForm</prop>
+	            <prop key="module/remoteformentry/setupForms.form">setupFormsForm</prop>
+	            <prop key="module/remoteformentry/resolveErrors.form">resolveErrorsForm</prop>
+	            <prop key="module/remoteformentry/returnDataToRemote.form">returnDataToRemoteForm</prop>
+	            <prop key="module/remoteformentry/generateReturnData.form">generateReturnDataForm</prop>
+	            <prop key="module/remoteformentry/receiveDataFromCentral.form">receiveDataFromCentralForm</prop>
+	            
+			</props>
+		</property>
+	</bean>
+	
+	<bean parent="serviceContext">
+		<property name="moduleService">
+			<list>
+				<value>org.openmrs.module.remoteformentry.RemoteFormEntryService</value> <!-- service interface name -->
+				<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+					<property name="transactionManager"><ref bean="transactionManager"/></property>
+					<property name="target">
+						<bean class="org.openmrs.module.remoteformentry.impl.RemoteFormEntryServiceImpl">
+							<property name="remoteFormEntryDAO">
+								<bean class="org.openmrs.module.remoteformentry.db.hibernate.HibernateRemoteFormEntryDAO">
+									<property name="sessionFactory"><ref bean="sessionFactory"/></property>	
+								</bean>
+							</property>	
+						</bean>
+					</property>
+					<property name="preInterceptors">
+						<list>
+							<ref bean="authorizationInterceptor"/>
+						</list>
+					</property>
+					<property name="transactionAttributeSource">
+						<bean class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"/>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="importForm" class="org.openmrs.module.remoteformentry.web.controller.ImportFormController">
+		<property name="commandName"><value>importList</value></property>
+		<property name="formView"><value>/module/remoteformentry/importForm</value></property>
+		<property name="successView"><value>import.form</value></property>
+	</bean>
+	
+	<bean id="exportForm" class="org.openmrs.module.remoteformentry.web.controller.ExportFormController">
+		<property name="commandName"><value>exportList</value></property>
+		<property name="formView"><value>/module/remoteformentry/exportForm</value></property>
+		<property name="successView"><value>export.form</value></property>
+	</bean>
+	
+	<bean id="propertiesForm" class="org.openmrs.module.remoteformentry.web.controller.PropertiesFormController">
+		<property name="commandName"><value>propertiesList</value></property>
+		<property name="formView"><value>/module/remoteformentry/propertiesForm</value></property>
+		<property name="successView"><value>properties.form</value></property>
+	</bean>
+	
+	<bean id="setupFormsForm" class="org.openmrs.module.remoteformentry.web.controller.SetupFormsFormController">
+		<property name="commandName"><value>forms</value></property>
+		<property name="formView"><value>/module/remoteformentry/setupFormsForm</value></property>
+		<property name="successView"><value>setupForms.form</value></property>
+	</bean>
+	
+	<bean id="resolveErrorsForm" class="org.openmrs.module.remoteformentry.web.controller.ResolveErrorsFormController">
+		<property name="commandName"><value>resolveErrorsList</value></property>
+		<property name="formView"><value>/module/remoteformentry/resolveErrorsForm</value></property>
+		<property name="successView"><value>resolveErrors.form</value></property>
+	</bean>
+	
+	<bean id="receiveDataFromCentralForm" class="org.openmrs.module.remoteformentry.web.controller.ReceiveDataFromCentralFormController">
+		<property name="commandName"><value>receiveDataFromCentral</value></property>
+		<property name="formView"><value>/module/remoteformentry/receiveDataFromCentralForm</value></property>
+		<property name="successView"><value>receiveDataFromCentral.form</value></property>
+	</bean>
+	
+	<bean id="returnDataToRemoteForm" class="org.openmrs.module.remoteformentry.web.controller.ReturnDataToRemoteFormController">
+		<property name="commandName"><value>returnDataToRemoteForm</value></property>
+		<property name="formView"><value>/module/remoteformentry/returnDataToRemoteForm</value></property>
+		<property name="successView"><value>returnDataToRemote.form</value></property>
+	</bean>
+	
+	<bean id="generateReturnDataForm" class="org.openmrs.module.remoteformentry.web.controller.GenerateReturnDataFormController">
+		<property name="commandName"><value>generateReturnDataForm</value></property>
+		<property name="formView"><value>/module/remoteformentry/generateReturnDataForm</value></property>
+		<property name="successView"><value>generateReturnData.form</value></property>
+	</bean>
+	
+</beans>
