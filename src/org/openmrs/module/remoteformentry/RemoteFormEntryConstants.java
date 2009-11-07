@@ -151,6 +151,20 @@ public class RemoteFormEntryConstants {
 	public static final String PERSON_ATTRIBUTE_TYPE = "person_attribute.person_attribute_type_id";
 	public static final String PERSON_ATTRIBUTE_VALUE = "person_attribute.value";
 	public static final String PERSON_ATTRIBUTE_VOIDED = "person_attribute.voided";
+	
+	public static final String PERSON_RELATIONSHIP = "person_relationship";
+	public static final String PERSON_RELATIONSHIP_TYPE = "person_relationship.person_relationship_type_id";
+	public static final String PERSON_RELATIONSHIP_A_OR_B = "person_relationship.a_or_b";
+	public static final String PERSON_RELATIONSHIP_UUID = "person_relationship.uuid";
+	public static final String PERSON_RELATIONSHIP_IDENTIFIER = "person_relationship.identifier";
+	public static final String PERSON_RELATIONSHIP_IDENTIFIER_TYPE = "person_relationship.identifier_type";
+	public static final String PERSON_RELATIONSHIP_IDENTIFIER_LOC = "person_relationship.location";
+	public static final String PERSON_RELATIONSHIP_PERSON_GIVENNAME = "person_relationship.given_name";
+	public static final String PERSON_RELATIONSHIP_PERSON_MIDDLENAME = "person_relationship.middle_name";
+	public static final String PERSON_RELATIONSHIP_PERSON_FAMILYNAME = "person_relationship.family_name";
+	public static final String PERSON_RELATIONSHIP_PERSON_GENDER = "person_relationship.gender";
+	public static final String PERSON_RELATIONSHIP_PERSON_BIRTHDATE = "person_relationship.birthdate";
+	public static final String PERSON_RELATIONSHIP_VOIDED = "person_relationship.voided";
 
 	// all first level property nodes can be found in this section:
     public static final String nodePrefix = "/form/"

@@ -1,8 +1,11 @@
 package org.openmrs.module.remoteformentry;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,13 +23,13 @@ import org.openmrs.module.formentry.FormEntryConstants;
 public class FormConverter {
 	
 	private static Log log = LogFactory.getLog(RemoteFormEntryUtil.class);
+	
+	// incremented value for the sort weights so that the fields show up in the order that they are in the hashmap
+	private Integer formFieldSortWeight = 0;
 
 	// cached FormService object
 	private FormService formService;
 	
-	// cached tribe attribute
-	private Boolean usePatientTribe = null;
-
 	/**
 	 * Adds the schema required by the remote form entry module to the given
 	 * form
@@ -100,7 +103,7 @@ public class FormConverter {
 		form.addFormField(rootFormField);
 
 		// mapping from field name to default value
-		Map<String, String> fieldNames = new HashMap<String, String>();
+		Map<String, String> fieldNames = new LinkedHashMap<String, String>();
 		
 		
 		// create the patient names
@@ -196,11 +199,37 @@ public class FormConverter {
 			                           rootFormField, true, 0, -1,
 			                           "$!{patient.getAttributes()}");
 		form.addFormField(tmpRootFormField);
-			
+		
 		fieldNames.clear();
 		fieldNames.put(RemoteFormEntryConstants.PERSON_ATTRIBUTE_TYPE, "$!{listItem.getAttributeType().getPersonAttributeTypeId()}");
 		fieldNames.put(RemoteFormEntryConstants.PERSON_ATTRIBUTE_VALUE, "$!{listItem.getValue()}");
 		fieldNames.put(RemoteFormEntryConstants.PERSON_ATTRIBUTE_VOIDED, "$!{listItem.isVoided()}");
+		for (Map.Entry<String, String> entry : fieldNames.entrySet()) {
+			tmpFormField = getNewFormField(entry.getKey(),
+			                               tmpRootFormField, false, null, null,
+			                               entry.getValue());
+			form.addFormField(tmpFormField);
+		}
+		
+		// create the Relationships
+		tmpRootFormField = getNewFormField(RemoteFormEntryConstants.PERSON_RELATIONSHIP,
+			                           rootFormField, true, 0, -1,
+			                           "$!{relationships}");
+		form.addFormField(tmpRootFormField);
+		
+		fieldNames.clear();
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_TYPE, "$!{listItem.getRelationshipType().getRelationshipTypeId()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_A_OR_B, "#if($!{listItem.getPersonA().getPersonId()} == ${patient.getPersonId()}) B #set($otherPerson=${listItem.getPersonB()}) #else A #set($otherPerson=$listItem.getPersonA()) #end");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_UUID, "$!{otherPerson.getUuid()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER, "$!{otherPerson.getPatientIdentifier()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_TYPE, "$!{otherPerson.getPatientIdentifier().getIdentifierType().getPatientIdentifierTypeId()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_LOC, "$!{otherPerson.getPatientIdentifier().getLocation().getLocationId()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_BIRTHDATE, "$!{date.format($otherPerson.getBirthdate())}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GENDER, "$!{otherPerson.getGender()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GIVENNAME, "$!{otherPerson.getGivenName()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_MIDDLENAME, "$!{otherPerson.getMiddleName()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_FAMILYNAME, "$!{otherPerson.getFamilyName()}");
+		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_VOIDED, "$!{listItem.isVoided()}");
 		for (Map.Entry<String, String> entry : fieldNames.entrySet()) {
 			tmpFormField = getNewFormField(entry.getKey(),
 			                               tmpRootFormField, false, null, null,
@@ -217,11 +246,6 @@ public class FormConverter {
         				"$!{patient.getBirthDateEstimated()}");
 		fieldNames.put(RemoteFormEntryConstants.PERSON_GENDER,
 						"$!{patient.getGender()}");
-		
-		if (usePatientTribe()) {
-			fieldNames.put(RemoteFormEntryConstants.PATIENT_TRIBE,
-							"$!{patient.getTribe().getTribeId()}^$!{patient.getTribe().getName()}");
-		}
 		
 		fieldNames.put(RemoteFormEntryConstants.PERSON_DEAD, "$!{patient.getDead()}");
 		fieldNames.put(RemoteFormEntryConstants.PERSON_DEATH_DATE, "$!{date.format($patient.getDeathDate())}");
@@ -262,7 +286,7 @@ public class FormConverter {
 		
 		// try and find the field with the given fieldName
 		Field field = null;
-		List<Field> fields = getFormService().findFields(upperFieldName);
+		List<Field> fields = getFormService().getFields(upperFieldName);
 		for (Field tmpField : fields) {
 			if (tmpField.getName().equals(upperFieldName)) {
 				field = tmpField;
@@ -274,6 +298,9 @@ public class FormConverter {
 		if (field == null) {
 			field = new Field();
 			field.setName(upperFieldName);
+			field.setCreator(Context.getAuthenticatedUser());
+			field.setDateCreated(new Date());
+			field.setUuid(UUID.randomUUID().toString());
 		}
 		field.setDefaultValue(defaultValue);
 		
@@ -293,6 +320,7 @@ public class FormConverter {
 		newFormField.setMinOccurs(minOccurs);
 		newFormField.setMaxOccurs(maxOccurs);
 		newFormField.setParent(parentFormField);
+		newFormField.setSortWeight(Float.valueOf(formFieldSortWeight++));
 
 		return newFormField;
 	}
@@ -329,18 +357,4 @@ public class FormConverter {
 		return formService;
 	}
 	
-	/**
-	 * Method to determine if the patient tribe should be included in things
-	 * 
-	 * @return
-	 */
-	private Boolean usePatientTribe() {
-		if (usePatientTribe == null) {
-			String val = Context.getAdministrationService().getGlobalProperty("use_patient_attribute.tribe", "true");
-			usePatientTribe = "true".equals(val);
-		}
-		
-		return usePatientTribe;
-	}
-
 }

@@ -28,7 +28,8 @@ import org.openmrs.PersonAddress;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.PersonName;
-import org.openmrs.Tribe;
+import org.openmrs.Relationship;
+import org.openmrs.RelationshipType;
 import org.openmrs.User;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.LocationService;
@@ -36,6 +37,7 @@ import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.remoteformentry.RemoteFormEntryConstants.RP_SERVER_TYPES;
 import org.openmrs.util.OpenmrsUtil;
+import org.openmrs.validator.PatientIdentifierValidator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -344,7 +346,12 @@ public class RemoteFormEntryUtil {
 			
 			// get the voided status
 			String voidStatus = xp.evaluate(RemoteFormEntryConstants.PATIENT_IDENTIFIER_VOIDED, currentNode);
-			pi.setVoided(voidStatus != null && voidStatus.equals("true"));
+			if (!pi.isVoided() && voidStatus != null && voidStatus.equals("true")) {
+				pi.setVoided(true);
+				pi.setVoidReason("Voided at remote");
+				pi.setVoidedBy(enterer);
+				pi.setDateVoided(new Date());
+			}
 			
 			// get the preferred status
 			String preferredStatus = xp.evaluate(RemoteFormEntryConstants.PATIENT_IDENTIFIER_PREFERRED, currentNode);
@@ -353,8 +360,23 @@ public class RemoteFormEntryUtil {
 			pi.setCreator(enterer);
 			pi.setDateCreated(new Date());
 			
-			// if this identifier type has a checkdigit and it is invalid
-			if (pi.getIdentifierType().hasCheckDigit() && !OpenmrsUtil.isValidCheckDigit(pi.getIdentifier())) {
+			// if this identifier type has a validator and it is invalid
+			boolean validCheckDigit;
+			if (!pi.getIdentifierType().hasValidator()) {
+				validCheckDigit = true; // there is no check digit
+			}
+			else {
+				try {
+					PatientIdentifierValidator.validateIdentifier(pi);
+					validCheckDigit = true;
+				}
+				catch (Exception e) {
+					validCheckDigit = false;
+					log.debug("Error while validating the checkdigit", e);
+				}
+			}
+			
+			if (!validCheckDigit) {
 				// see if the admin has given an identifierType to convert this to
 				String invalidTypeId = Context.getAdministrationService().getGlobalProperty(RemoteFormEntryConstants.GP_INVALID_IDENTIFIER_TYPE, "");
 				
@@ -363,6 +385,15 @@ public class RemoteFormEntryUtil {
 					PatientIdentifierType pit = Context.getPatientService()
 					        .getPatientIdentifierType(Integer.valueOf(invalidTypeId));
 					pi.setIdentifierType(pit);
+				}
+				else {
+					log
+				        .warn("Invalid identifier found: "
+				                + pi.getIdentifier()
+				                + ".  Saving of this patient will fail. You can set the "
+				                + RemoteFormEntryConstants.GP_INVALID_IDENTIFIER_TYPE
+				                + " global property so that patients can at least be processed"
+				                + " (but end up with the assigned invalid identifier type");
 				}
 			}
 			
@@ -399,7 +430,12 @@ public class RemoteFormEntryUtil {
 			
 			// get the voided status
 			String voidStatus = xp.evaluate(RemoteFormEntryConstants.PERSON_NAME_VOIDED, currentNode);
-			personName.setVoided(voidStatus != null && voidStatus.equals("true"));
+			if (!personName.isVoided() && voidStatus != null && voidStatus.equals("true")) {
+				personName.setVoided(true);
+				personName.setVoidedBy(enterer);
+				personName.setDateVoided(new Date());
+				personName.setVoidReason("Voided at remote site");
+			}
 			
 			// get the preferred status
 			String preferredStatus = xp.evaluate(RemoteFormEntryConstants.PERSON_NAME_PREFERRED, currentNode);
@@ -455,7 +491,12 @@ public class RemoteFormEntryUtil {
 			
 			// get the voided status
 			String voidStatus = xp.evaluate(RemoteFormEntryConstants.PERSON_ADDRESS_VOIDED, currentNode);
-			personAddress.setVoided(voidStatus != null && voidStatus.equals("true"));
+			if (!personAddress.isVoided() && voidStatus != null && voidStatus.equals("true")) {
+				personAddress.setVoided(true);
+				personAddress.setVoidReason("Voided at remote");
+				personAddress.setVoidedBy(enterer);
+				personAddress.setDateVoided(new Date());
+			}
 			
 			// get the preferred status
 			String preferredStatus = xp.evaluate(RemoteFormEntryConstants.PERSON_ADDRESS_PREFERRED, currentNode);
@@ -511,7 +552,12 @@ public class RemoteFormEntryUtil {
 			
 			// get the voided status
 			String voidStatus = xp.evaluate(RemoteFormEntryConstants.PERSON_ATTRIBUTE_VOIDED, currentNode);
-			personAttribute.setVoided(voidStatus != null && voidStatus.equals("true"));
+			if (!personAttribute.isVoided() && voidStatus != null && voidStatus.equals("true")) {
+				personAttribute.setVoided(true);
+				personAttribute.setVoidReason("Voided at remote");
+				personAttribute.setVoidedBy(enterer);
+				personAttribute.setDateVoided(new Date());
+			}
 			
 			personAttribute.setCreator(enterer);
 			personAttribute.setDateCreated(new Date());
@@ -533,12 +579,6 @@ public class RemoteFormEntryUtil {
 	 */
 	public static void setPatientProperties(Patient patient, Document doc, XPath xp, User enterer)
 	                                                                                              throws XPathExpressionException {
-		
-		// get and set patient tribe
-		String tribeId = xp.evaluate("substring-before(" + RemoteFormEntryConstants.nodePrefix
-		        + RemoteFormEntryConstants.PATIENT_TRIBE + ", '^')", doc);
-		if (tribeId.length() > 0)
-			patient.setTribe(new Tribe(Integer.valueOf(tribeId)));
 		
 		if (patient.getCreator() == null) {
 			patient.setCreator(enterer);
@@ -591,14 +631,7 @@ public class RemoteFormEntryUtil {
 			person.setCauseOfDeath(new Concept(Integer.valueOf(deathCause)));
 		
 		String gender = xp.evaluate(RemoteFormEntryConstants.nodePrefix + RemoteFormEntryConstants.PERSON_GENDER, doc);
-		if ("F".equals(gender))
-			person.setGender("F");
-		else if ("M".equals(gender))
-			person.setGender("M");
-		else {
-			person.setGender("M");
-			log.error("Unable to determine gender for person_id " + person.getPersonId());
-		}
+		setGender(person, gender);
 		
 		if (person.getPersonCreator() == null) {
 			person.setPersonCreator(enterer);
@@ -608,6 +641,23 @@ public class RemoteFormEntryUtil {
 	}
 	
 	/**
+	 * Convenience method to determine the gender from a string
+	 * 
+	 * @param person
+	 * @param gender
+	 */
+	private static void setGender(Person person, String gender) {
+		if ("F".equals(gender))
+			person.setGender("F");
+		else if ("M".equals(gender))
+			person.setGender("M");
+		else {
+			person.setGender("M");
+			log.error("Unable to determine gender for person_id " + person.getPersonId());
+		}
+    }
+
+	/**
 	 * Create the relationship mappings for this patient
 	 * 
 	 * @param createdPatient patient (and patient_id) to map the relationships to
@@ -615,9 +665,105 @@ public class RemoteFormEntryUtil {
 	 * @param xp xpath translator
 	 * @param enterer User that entered this form
 	 */
-	public static void createRelationships(Patient createdPatient, Document doc, XPath xp, User enterer)
+	public static List<Relationship> getRelationships(Patient createdPatient, Document doc, XPath xp, User enterer)
 	                                                                                                    throws XPathExpressionException {
-		// TODO discover and loop over the patient's relationships
+		
+		DateFormat hl7DateFormat = new SimpleDateFormat("yyyyMMdd");
+		
+		// discover and loop over the patient's relationships
+		
+		// list to return
+		List<Relationship> relationships = new ArrayList<Relationship>();
+		
+		// get all person attribute nodes
+		NodeList nodeList = (NodeList) xp.evaluate(RemoteFormEntryConstants.nodePrefix
+		        + RemoteFormEntryConstants.PERSON_RELATIONSHIP, doc, XPathConstants.NODESET);
+		
+		// loop over the nodes
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node currentNode = nodeList.item(i);
+			
+			Relationship relationship = new Relationship();
+			
+			// get the type id
+			String typeId = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_TYPE, currentNode);
+			if (typeId.length() > 0) {
+				RelationshipType pat = Context.getPersonService().getRelationshipType(Integer.valueOf(typeId));
+				relationship.setRelationshipType(pat);
+			} else
+				log.error("Uh oh. Going to have trouble creating a relationships with no relationship type id. node: "
+				        + currentNode.getTextContent());
+			
+			// get the other person from our db
+			String otherPersonsUuid = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_UUID, currentNode);
+			Patient patient = Context.getPatientService().getPatientByUuid(otherPersonsUuid);
+			if (patient == null) {
+				// the person was created on the remote server, create the person stub from the information 
+				// passed to us
+				patient = new Patient();
+				
+				// set the identifier (if is one) on the new person/patient
+				String identifierStr = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER, currentNode);
+				String identifierTypeId = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_TYPE, currentNode);
+				String locationId = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_LOC, currentNode);
+				if (identifierStr != null) {
+					PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(Integer.valueOf(identifierTypeId));
+					Location loc = Context.getLocationService().getLocation(locationId);
+					PatientIdentifier identifier = new PatientIdentifier(identifierStr, pit, loc);
+					patient.addIdentifier(identifier);
+				}
+				
+				// get the birthdate
+				String birthdateString = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_BIRTHDATE, currentNode);
+				try {
+					patient.setBirthdate(hl7DateFormat.parse(birthdateString));
+				}
+				catch (ParseException e) {
+					log.error("Error getting birthdate from string for relationship person uuid: " + otherPersonsUuid, e);
+				}
+				
+				// get the gender
+				String gender = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GENDER, currentNode);
+				setGender(patient, gender);
+				
+				// set the person's name
+				PersonName pn = new PersonName();
+				pn.setGivenName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GIVENNAME, currentNode));
+				pn.setMiddleName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_MIDDLENAME, currentNode));
+				pn.setFamilyName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_FAMILYNAME, currentNode));
+				patient.addName(pn);
+				
+				// now save the patient to the db so we have a primary key
+				Context.getPatientService().savePatient(patient);
+			}
+			
+			String personAorB = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_A_OR_B, currentNode);
+			personAorB = personAorB.trim(); // take out whitespace
+			if ("B".equals(personAorB)) { // the person defined here is person B.  then personA is the parent patient object for the current form  
+				relationship.setPersonA(createdPatient);
+				relationship.setPersonB(patient);
+			}
+			else { // "this" is person B is the parent person for this whole message
+				relationship.setPersonA(patient);
+				relationship.setPersonB(createdPatient);
+			}
+			
+			// get the voided status
+			String voidStatus = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_VOIDED, currentNode);
+			if (!relationship.isVoided() && voidStatus != null && voidStatus.equals("true")) {
+				relationship.setVoided(true);
+				relationship.setVoidReason("Voided at remote");
+				relationship.setVoidedBy(enterer);
+				relationship.setDateVoided(new Date());
+			}
+			
+			relationship.setCreator(enterer);
+			relationship.setDateCreated(new Date());
+			
+			relationships.add(relationship);
+		}
+		
+		return relationships;
 		
 	}
 	

@@ -1,8 +1,8 @@
 package org.openmrs.module.remoteformentry;
 
 import org.junit.Test;
-import org.openmrs.test.testutil.BaseModuleContextSensitiveTest;
-import org.openmrs.test.testutil.SkipBaseSetup;
+import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.SkipBaseSetup;
 
 /**
  * This class tests the different methods in the RemoteFormEntryService

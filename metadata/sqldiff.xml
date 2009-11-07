@@ -31,7 +31,8 @@
 				repeat_interval,
 				start_on_startup,
 				created_by,
-				date_created
+				date_created,
+				uuid
 			) 
 			VALUES 
 			(
@@ -42,7 +43,8 @@
 				86400,
 				1,
 				1,
-				'2007-09-18 01:42:00'
+				'2007-09-18 01:42:00',
+				'0cbe2ed3-cd5f-4f46-9459-26127c9265ab'
 			);
 			
 			INSERT INTO
@@ -55,7 +57,8 @@
 				repeat_interval,
 				start_on_startup,
 				created_by,
-				date_created
+				date_created,
+				uuid
 			) 
 			VALUES 
 			(
@@ -66,7 +69,8 @@
 				30,
 				0,
 				1,
-				'2007-09-18 01:42:00'
+				'2007-09-18 01:42:00',
+				'12be2ed3-cd5f-4f46-9459-26127c926512'
 			);
 		</sql>
 	</diff>

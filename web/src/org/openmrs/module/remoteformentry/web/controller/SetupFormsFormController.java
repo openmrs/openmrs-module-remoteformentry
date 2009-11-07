@@ -37,7 +37,7 @@ public class SetupFormsFormController extends SimpleFormController {
     protected Object formBackingObject(HttpServletRequest request) throws ServletException {
     	
     	// the form backing object is all UNretired forms in the database
-    	return Context.getFormService().getForms(false);
+    	return Context.getFormService().getAllForms();
     }
     
     /**
@@ -60,7 +60,7 @@ public class SetupFormsFormController extends SimpleFormController {
 	    			
 	    			// make sure the form is unpublished
     				formConverter.addOrUpdateSchema(form);
-	    			formService.updateForm(form);
+	    			formService.saveForm(form);
 	    			
 	    			// get the new form fields into the xsn
 	    			try {

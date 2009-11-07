@@ -28,6 +28,7 @@ import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAddress;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonName;
+import org.openmrs.Relationship;
 import org.openmrs.User;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.EncounterService;
@@ -224,8 +225,11 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 		}
 
 		AdministrationService as = Context.getAdministrationService();
-		as.saveGlobalProperty(new GlobalProperty(RemoteFormEntryConstants.GP_INITIAL_ENCOUNTER_TYPES,
-		                     encounterTypeIdsBuilder.toString()));
+		GlobalProperty gp = as.getGlobalPropertyObject(RemoteFormEntryConstants.GP_INITIAL_ENCOUNTER_TYPES);
+		if (gp == null)
+			gp = new GlobalProperty(RemoteFormEntryConstants.GP_INITIAL_ENCOUNTER_TYPES);
+		gp.setPropertyValue(encounterTypeIdsBuilder.toString());
+		as.saveGlobalProperty(gp);
 	}
 
 	/**
@@ -267,7 +271,9 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 		Patient createdPatient = patientService.savePatient(patient);
 
 		// TODO create the relationships
-		// createRelationships(createdPatient, doc, xp, enterer);
+		for (Relationship rel : RemoteFormEntryUtil.getRelationships(createdPatient, doc, xp, enterer)) {
+			Context.getPersonService().saveRelationship(rel);
+		}
 
 		// TODO create the program/workflow additions
 		// createProgramWorkflowEnrollment(createdPatient, doc, xp, enterer);
@@ -373,7 +379,7 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 				patient.addAttribute(newPersonAttribute);
 			
 		}
-
+		
 		// set the person properties (like gender, death status, birthdate, etc)
 		RemoteFormEntryUtil.setPersonProperties(patient, doc, xp, enterer);
 
@@ -383,14 +389,47 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 		// now finally save the person in the database
 		patientService.savePatient(patient);
 
-		// TODO add the relationships
-		// createRelationships(createdPatient, doc, xp, enterer);
-
+		// Doing this after saving the patient so we're sure to have primary keys for both
+		// this new patient and the other person relation
+		// add all relationships if patient doesn't have them yet
+		for (Relationship newRelationship : RemoteFormEntryUtil.getRelationships(patient, doc, xp, enterer)) {
+			boolean found = false;
+			for (Relationship rel : Context.getPersonService().getRelationshipsByPerson(patient)) {
+				// we want to use .equals() here instead of .equalsContent() because
+				// of the "voided" attribute needing to be included in the equalsContent
+				if (equalsContent(rel, newRelationship)) {
+					found = true;
+					if (newRelationship.isVoided() && !rel.isVoided()) {
+						rel.setVoided(true);
+						rel.setVoidedBy(enterer);
+						rel.setDateVoided(new Date());
+					}
+					break;
+				}
+			}
+			
+			if (!found && newRelationship != null)
+				Context.getPersonService().saveRelationship(newRelationship);
+		}
+		
 		// TODO add the program/workflow additions
 		// createProgramWorkflowEnrollment(createdPatient, doc, xp, enterer);
 
 	}
 	
+	/**
+	 * Compares personA's, personB's, and relationship type
+	 * 
+	 * @param rel first side
+	 * @param newRelationship other side
+	 * @return true if these are really the same relationship
+	 */
+	private boolean equalsContent(Relationship rel, Relationship newRelationship) {
+	    return rel.getPersonA().equals(newRelationship.getPersonA()) &&
+	    	rel.getPersonB().equals(newRelationship.getPersonB()) &&
+	    	rel.getRelationshipType().equals(newRelationship.getRelationshipType());
+    }
+
 	/**
 	 * @see org.openmrs.module.remoteformentry.RemoteFormEntryService#receiveGeneratedDataFromCentralForLocation(java.io.File)
 	 */

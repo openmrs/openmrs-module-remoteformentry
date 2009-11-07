@@ -6,10 +6,9 @@
     <uid>m0S4O4aRbuwVU5BkdQJ9</uid>
   </header>
   <all_patient_data>
-    <patient.tribe openmrs_attribute="tribe" openmrs_table="patient">1^Kal/Nandi</patient.tribe>
     <patient_identifier>
       <patient_identifier.identifier openmrs_attribute="identifier" openmrs_table="patient_identifier">1234567890</patient_identifier.identifier>
-      <patient_identifier.identifier_type_id openmrs_attribute="identifier_type_id" openmrs_table="patient_identifier">1</patient_identifier.identifier_type_id>
+      <patient_identifier.identifier_type_id openmrs_attribute="identifier_type_id" openmrs_table="patient_identifier">4</patient_identifier.identifier_type_id>
       <patient_identifier.location_id openmrs_attribute="location_id" openmrs_table="patient_identifier">1</patient_identifier.location_id>
       <patient_identifier.preferred openmrs_attribute="preferred" openmrs_table="patient_identifier">false</patient_identifier.preferred>
       <patient_identifier.voided openmrs_attribute="voided" openmrs_table="patient_identifier">true</patient_identifier.voided>
@@ -25,7 +24,7 @@
     <person.birthdate_estimated openmrs_attribute="birthdate_estimated" openmrs_table="person">true</person.birthdate_estimated>
     <person.dead openmrs_attribute="dead" openmrs_table="person">true</person.dead>
     <person.death_date openmrs_attribute="death_date" openmrs_table="person">20010101</person.death_date>
-    <person.death_reason openmrs_attribute="death_reason" openmrs_table="person">5622^OTHER_NONCODED</person.death_reason>
+    <person.death_reason openmrs_attribute="death_reason" openmrs_table="person">22^OTHER_NONCODED</person.death_reason>
     <person.gender openmrs_attribute="gender" openmrs_table="person">M</person.gender>
 	<person_address>
       <person_address.address1 openmrs_attribute="address1" openmrs_table="person_address">address12</person_address.address1>
@@ -44,7 +43,7 @@
       <person_address.township_division openmrs_attribute="township_division" openmrs_table="person_address">townshipDivision2</person_address.township_division>
       <person_address.voided openmrs_attribute="voided" openmrs_table="person_address">true</person_address.voided>
     </person_address>
-<person_address>
+    <person_address>
       <person_address.address1 openmrs_attribute="address1" openmrs_table="person_address">address1</person_address.address1>
       <person_address.address2 openmrs_attribute="address2" openmrs_table="person_address">address2</person_address.address2>
       <person_address.city_village openmrs_attribute="city_village" openmrs_table="person_address">cityVillage</person_address.city_village>
@@ -61,13 +60,41 @@
       <person_address.township_division openmrs_attribute="township_division" openmrs_table="person_address">townshipDivision</person_address.township_division>
       <person_address.voided openmrs_attribute="voided" openmrs_table="person_address">false</person_address.voided>
     </person_address>
+    <person_relationship>
+      <person_relationship.person_relationship_type_id openmrs_attribute="person_relationship_type_id" openmrs_table="person_relationship">1</person_relationship.person_relationship_type_id>
+      <person_relationship.a_or_b openmrs_attribute="a_or_b" openmrs_table="person_relationship"> A  </person_relationship.a_or_b>
+      <person_relationship.uuid openmrs_attribute="uuid" openmrs_table="person_relationship">d44fdcf2-45ff-11de-abd9-0010c6dffd0f</person_relationship.uuid>
+      <person_relationship.identifier openmrs_attribute="identifier" openmrs_table="person_relationship">100</person_relationship.identifier>
+      <person_relationship.identifier_type openmrs_attribute="identifierType" openmrs_table="person_relationship">2</person_relationship.identifier_type>
+      <person_relationship.location openmrs_attribute="location" openmrs_table="person_relationship">1</person_relationship.location>
+      <person_relationship.birthdate openmrs_attribute="birthdate" openmrs_table="person_relationship">19750101</person_relationship.birthdate>
+      <person_relationship.gender openmrs_attribute="gender" openmrs_table="person_relationship">M</person_relationship.gender>
+      <person_relationship.given_name openmrs_attribute="givenName" openmrs_table="person_relationship">John</person_relationship.given_name>
+      <person_relationship.middle_name openmrs_attribute="middleName" openmrs_table="person_relationship">D</person_relationship.middle_name>
+      <person_relationship.family_name openmrs_attribute="familyName" openmrs_table="person_relationship">Patient</person_relationship.family_name>
+      <person_relationship.voided openmrs_attribute="voided" openmrs_table="person_relationship">false</person_relationship.voided>
+    </person_relationship>
+    <person_relationship>
+      <person_relationship.person_relationship_type_id openmrs_attribute="person_relationship_type_id" openmrs_table="person_relationship">5</person_relationship.person_relationship_type_id>
+      <person_relationship.a_or_b openmrs_attribute="a_or_b" openmrs_table="person_relationship"> B  </person_relationship.a_or_b>
+      <person_relationship.uuid openmrs_attribute="uuid" openmrs_table="person_relationship">86526ed6-3c11-11de-a0ba-001e378eb67e</person_relationship.uuid>
+      <person_relationship.identifier openmrs_attribute="identifier" openmrs_table="person_relationship">200</person_relationship.identifier>
+      <person_relationship.identifier_type openmrs_attribute="identifierType" openmrs_table="person_relationship">2</person_relationship.identifier_type>
+      <person_relationship.location openmrs_attribute="location" openmrs_table="person_relationship">1</person_relationship.location>
+      <person_relationship.birthdate openmrs_attribute="birthdate" openmrs_table="person_relationship">19250101</person_relationship.birthdate>
+      <person_relationship.gender openmrs_attribute="gender" openmrs_table="person_relationship">F</person_relationship.gender>
+      <person_relationship.given_name openmrs_attribute="givenName" openmrs_table="person_relationship">Suzy</person_relationship.given_name>
+      <person_relationship.middle_name openmrs_attribute="middleName" openmrs_table="person_relationship">D</person_relationship.middle_name>
+      <person_relationship.family_name openmrs_attribute="familyName" openmrs_table="person_relationship">Patient</person_relationship.family_name>
+      <person_relationship.voided openmrs_attribute="voided" openmrs_table="person_relationship">false</person_relationship.voided>
+    </person_relationship>
     <person_attribute>
-      <person_attribute.person_attribute_type_id openmrs_attribute="person_attribute_type_id" openmrs_table="person_attribute">7</person_attribute.person_attribute_type_id>
+      <person_attribute.person_attribute_type_id openmrs_attribute="person_attribute_type_id" openmrs_table="person_attribute">8</person_attribute.person_attribute_type_id>
       <person_attribute.value openmrs_attribute="value" openmrs_table="person_attribute">5</person_attribute.value>
       <person_attribute.voided openmrs_attribute="voided" openmrs_table="person_attribute">false</person_attribute.voided>
     </person_attribute>
 	<person_attribute>
-      <person_attribute.person_attribute_type_id openmrs_attribute="person_attribute_type_id" openmrs_table="person_attribute">7</person_attribute.person_attribute_type_id>
+      <person_attribute.person_attribute_type_id openmrs_attribute="person_attribute_type_id" openmrs_table="person_attribute">8</person_attribute.person_attribute_type_id>
       <person_attribute.value openmrs_attribute="value" openmrs_table="person_attribute">123</person_attribute.value>
       <person_attribute.voided openmrs_attribute="voided" openmrs_table="person_attribute">true</person_attribute.voided>
     </person_attribute>
