@@ -74,6 +74,7 @@ public class ReceiveDataFromCentralFormController extends SimpleFormController {
 			
 			if (request instanceof MultipartHttpServletRequest) {
 				HttpSession httpSession = request.getSession();
+				httpSession.setMaxInactiveInterval(-1); // don't let the session expire 
 				RemoteFormEntryService remoteService = (RemoteFormEntryService)Context.getService(RemoteFormEntryService.class);
 				MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
 				MultipartFile returnedData = multipartRequest.getFile("returnedData");
