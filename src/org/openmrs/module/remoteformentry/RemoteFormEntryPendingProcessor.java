@@ -115,7 +115,7 @@ public class RemoteFormEntryPendingProcessor{
 				Integer identifierTypeId = currentIdentifier.getIdentifierType().getPatientIdentifierTypeId();
 				
 				// search the database for all patients with this identifier string
-				List<Patient> patients = patientService.getPatients(null, identifierString, null);
+				List<Patient> patients = patientService.getPatients(null, identifierString, null, true);
 				
 				for (Patient p : patients) {
 					// loop over this patient's identifiers to make sure they have this 
