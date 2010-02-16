@@ -37,6 +37,9 @@
 			<fileset dir="lib-common">
 				<include name="**/*.jar"/>
 			</fileset>
+			<fileset dir="../openmrs-1.5.x">
+				<include name="lib/spring-framework/*.jar"/>
+			</fileset>
 		</path>
 
 	</target>

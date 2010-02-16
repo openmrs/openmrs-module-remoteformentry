@@ -33,6 +33,7 @@ import org.openmrs.RelationshipType;
 import org.openmrs.User;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.LocationService;
+import org.openmrs.api.PatientIdentifierException;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.remoteformentry.RemoteFormEntryConstants.RP_SERVER_TYPES;
@@ -367,12 +368,20 @@ public class RemoteFormEntryUtil {
 			}
 			else {
 				try {
-					PatientIdentifierValidator.validateIdentifier(pi);
+					// not calling PIV.validIdentifier(PI) because it checks for duplicates in the db
+					// and we don't want to do that because we have no patient yet
+					if (!pi.isVoided())
+						PatientIdentifierValidator.validateIdentifier(pi.getIdentifier(), pi.getIdentifierType());
+					
 					validCheckDigit = true;
+				}
+				catch (PatientIdentifierException e) {
+					validCheckDigit = false;
+					// don't print exception 
 				}
 				catch (Exception e) {
 					validCheckDigit = false;
-					log.debug("Error while validating the checkdigit", e);
+					log.error("Error while validating the checkdigit", e);
 				}
 			}
 			
