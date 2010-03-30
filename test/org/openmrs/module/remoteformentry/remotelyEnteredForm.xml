@@ -61,6 +61,20 @@
       <person_address.voided openmrs_attribute="voided" openmrs_table="person_address">false</person_address.voided>
     </person_address>
     <person_relationship>
+      <person_relationship.person_relationship_type_id openmrs_attribute="person_relationship_type_id" openmrs_table="person_relationship"></person_relationship.person_relationship_type_id>
+      <person_relationship.a_or_b openmrs_attribute="a_or_b" openmrs_table="person_relationship"> A  </person_relationship.a_or_b>
+      <person_relationship.uuid openmrs_attribute="uuid" openmrs_table="person_relationship"></person_relationship.uuid>
+      <person_relationship.identifier openmrs_attribute="identifier" openmrs_table="person_relationship"></person_relationship.identifier>
+      <person_relationship.identifier_type openmrs_attribute="identifierType" openmrs_table="person_relationship"></person_relationship.identifier_type>
+      <person_relationship.location openmrs_attribute="location" openmrs_table="person_relationship"></person_relationship.location>
+      <person_relationship.birthdate openmrs_attribute="birthdate" openmrs_table="person_relationship"></person_relationship.birthdate>
+      <person_relationship.gender openmrs_attribute="gender" openmrs_table="person_relationship"></person_relationship.gender>
+      <person_relationship.given_name openmrs_attribute="givenName" openmrs_table="person_relationship"></person_relationship.given_name>
+      <person_relationship.middle_name openmrs_attribute="middleName" openmrs_table="person_relationship"></person_relationship.middle_name>
+      <person_relationship.family_name openmrs_attribute="familyName" openmrs_table="person_relationship"></person_relationship.family_name>
+      <person_relationship.voided openmrs_attribute="voided" openmrs_table="person_relationship">false</person_relationship.voided>
+    </person_relationship>
+    <person_relationship>
       <person_relationship.person_relationship_type_id openmrs_attribute="person_relationship_type_id" openmrs_table="person_relationship">1</person_relationship.person_relationship_type_id>
       <person_relationship.a_or_b openmrs_attribute="a_or_b" openmrs_table="person_relationship"> A  </person_relationship.a_or_b>
       <person_relationship.uuid openmrs_attribute="uuid" openmrs_table="person_relationship">d44fdcf2-45ff-11de-abd9-0010c6dffd0f</person_relationship.uuid>
