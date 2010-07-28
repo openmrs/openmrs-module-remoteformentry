@@ -218,18 +218,44 @@ public class FormConverter {
 		form.addFormField(tmpRootFormField);
 		
 		fieldNames.clear();
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_TYPE, "$!{listItem.getRelationshipType().getRelationshipTypeId()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_A_OR_B, "#if($!{listItem.getPersonA().getPersonId()} == ${patient.getPersonId()}) B #set($otherPerson=${listItem.getPersonB()}) #else A #set($otherPerson=$listItem.getPersonA()) #end");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_UUID, "$!{otherPerson.getUuid()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER, "$!{otherPerson.getPatientIdentifier()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_TYPE, "$!{otherPerson.getPatientIdentifier().getIdentifierType().getPatientIdentifierTypeId()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_LOC, "$!{otherPerson.getPatientIdentifier().getLocation().getLocationId()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_BIRTHDATE, "$!{date.format($otherPerson.getBirthdate())}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GENDER, "$!{otherPerson.getGender()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GIVENNAME, "$!{otherPerson.getGivenName()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_MIDDLENAME, "$!{otherPerson.getMiddleName()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_FAMILYNAME, "$!{otherPerson.getFamilyName()}");
-		fieldNames.put(RemoteFormEntryConstants.PERSON_RELATIONSHIP_VOIDED, "$!{listItem.isVoided()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_TYPE,
+				"$!{listItem.getRelationshipType().getRelationshipTypeId()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_A_OR_B,
+				"#if($!{listItem.getPersonA().getPersonId()} == ${patient.getPersonId()}) "
+					+ "B #set($otherPerson=${listItem.getPersonB()}) "
+					+ "#else A #set($otherPerson=$listItem.getPersonA()) #end");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_UUID,
+				"$!{otherPerson.getUuid()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER,
+				"$!{otherPerson.getPatientIdentifier()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_TYPE,
+				"$!{otherPerson.getPatientIdentifier().getIdentifierType().getPatientIdentifierTypeId()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_LOC,
+				"$!{otherPerson.getPatientIdentifier().getLocation().getLocationId()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_BIRTHDATE,
+				"$!{date.format($otherPerson.getBirthdate())}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GENDER,
+				"$!{otherPerson.getGender()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GIVENNAME,
+				"$!{otherPerson.getGivenName()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_MIDDLENAME,
+				"$!{otherPerson.getMiddleName()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_FAMILYNAME,
+				"$!{otherPerson.getFamilyName()}");
+		fieldNames.put(
+				RemoteFormEntryConstants.PERSON_RELATIONSHIP_VOIDED,
+				"$!{listItem.isVoided()}");
 		for (Map.Entry<String, String> entry : fieldNames.entrySet()) {
 			tmpFormField = getNewFormField(entry.getKey(),
 			                               tmpRootFormField, false, null, null,
@@ -240,12 +266,14 @@ public class FormConverter {
 		
 		// other base person and patient demographics
 		fieldNames.clear();
+		fieldNames.put(RemoteFormEntryConstants.PERSON_UUID,
+				"$!{patient.getUuid()}");
 		fieldNames.put(RemoteFormEntryConstants.PERSON_BIRTHDATE,
-		               "$!{date.format($patient.getBirthdate())}");
+				"$!{date.format($patient.getBirthdate())}");
 		fieldNames.put(RemoteFormEntryConstants.PERSON_BIRTHDATE_ESTIMATED,
-        				"$!{patient.getBirthDateEstimated()}");
+				"$!{patient.getBirthDateEstimated()}");
 		fieldNames.put(RemoteFormEntryConstants.PERSON_GENDER,
-						"$!{patient.getGender()}");
+				"$!{patient.getGender()}");
 		
 		fieldNames.put(RemoteFormEntryConstants.PERSON_DEAD, "$!{patient.getDead()}");
 		fieldNames.put(RemoteFormEntryConstants.PERSON_DEATH_DATE, "$!{date.format($patient.getDeathDate())}");
@@ -272,9 +300,9 @@ public class FormConverter {
 	 * @param parentFormField FormField this object will be the parent of the
 	 *        newly created/returned formField
 	 * @param isSection true/false whether or not this field should be a section type.
-	 * @param minOccurs Integer minimum number of occurances for this formfield.  If 
+	 * @param minOccurs Integer minimum number of occurrences for this formfield.  If 
 	 * 		  not required, should be 0, otherwise, null
-	 * @param maxOccurs Integer maximum occurances for this formfield. Commonly -1 or null    
+	 * @param maxOccurs Integer maximum occurrences for this formfield. Commonly -1 or null    
 	 * @param defaultValue String to be to the default value of the field if it
 	 *        doesn't exist
 	 * @return FormField with a null formFieldId

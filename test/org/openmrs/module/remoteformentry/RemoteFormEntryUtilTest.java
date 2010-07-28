@@ -21,6 +21,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
+
+	// used in various tests
+	public static final String SAMPLE_XML_PERSON_UUID = "2178037d-f86b-4f12-8d8b-be3ebc220022";
+
 	/**
 	 * @see {@link RemoteFormEntryUtil#getRelationships(Patient,Document,XPath,User)}
 	 * 

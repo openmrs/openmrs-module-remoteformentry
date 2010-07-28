@@ -120,7 +120,7 @@ public class RemoteFormEntryConstants {
 	public static final String PATIENT_IDENTIFIER_LOCATION = "patient_identifier.location_id";
 	public static final String PATIENT_IDENTIFIER_VOIDED = "patient_identifier.voided";
 	public static final String PATIENT_IDENTIFIER_PREFERRED = "patient_identifier.preferred";
-	
+
 	public static final String PERSON_ADDRESS = "person_address";
 	public static final String PERSON_ADDRESS_ADDRESS1 = "person_address.address1";
 	public static final String PERSON_ADDRESS_ADDRESS2 = "person_address.address2";
@@ -140,6 +140,7 @@ public class RemoteFormEntryConstants {
 	
 	public static final String PATIENT_TRIBE = "patient.tribe";
 
+	public static final String PERSON_UUID = "person.uuid";
 	public static final String PERSON_BIRTHDATE = "person.birthdate";
 	public static final String PERSON_BIRTHDATE_ESTIMATED = "person.birthdate_estimated";
 	public static final String PERSON_GENDER = "person.gender";

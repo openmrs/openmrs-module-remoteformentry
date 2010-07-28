@@ -20,7 +20,6 @@
       <patient_identifier.preferred openmrs_attribute="preferred" openmrs_table="patient_identifier">true</patient_identifier.preferred>
       <patient_identifier.voided openmrs_attribute="voided" openmrs_table="patient_identifier">false</patient_identifier.voided>
     </patient_identifier>
-    <person.uuid openmrs_attribute="uuid" openmrs_table="person">2178037d-f86b-4f12-8d8b-be3ebc220022</person.uuid>
     <person.birthdate openmrs_attribute="birthdate" openmrs_table="person">19650919</person.birthdate>
     <person.birthdate_estimated openmrs_attribute="birthdate_estimated" openmrs_table="person">true</person.birthdate_estimated>
     <person.dead openmrs_attribute="dead" openmrs_table="person">true</person.dead>

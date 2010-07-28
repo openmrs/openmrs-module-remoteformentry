@@ -646,7 +646,16 @@ public class RemoteFormEntryUtil {
 			person.setPersonCreator(enterer);
 			person.setPersonDateCreated(new Date());
 		}
-		
+
+		String uuid = RemoteFormEntryUtil.getPatientUuid(doc, xp);
+		if (uuid != null && !uuid.isEmpty() && !uuid.equals(person.getUuid())) {
+			// TODO: should we throw an exception if the UUIDs don't match?
+			if (person.getUuid() != null)
+				log.warn("Person id '" + person.getPersonId() + "' had UUID '"
+						+ person.getUuid() + "' but the form had UUID '" + uuid
+						+ "'; updating to new UUID.");
+			person.setUuid(uuid);
+		}
 	}
 	
 	/**
@@ -853,6 +862,22 @@ public class RemoteFormEntryUtil {
 		
 		return locations;
 		
+	}
+
+	/**
+	 * obtain the patient's UUID
+	 * 
+	 * @param doc the document being searched
+	 * @param xp an initialized XPath object
+	 * @return the found UUID (or null if not found)
+	 */
+	public static String getPatientUuid(Document doc, XPath xp) {
+		String uuid = null;
+		try {
+			uuid = xp.evaluate(RemoteFormEntryConstants.nodePrefix
+					+ RemoteFormEntryConstants.PERSON_UUID, doc);
+		} catch (XPathExpressionException e) { }
+		return uuid;
 	}
 	
 }

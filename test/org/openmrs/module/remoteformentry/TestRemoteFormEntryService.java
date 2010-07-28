@@ -199,7 +199,9 @@ public class TestRemoteFormEntryService extends BaseModuleContextSensitiveTest {
      * @param createdPatient
      */
     private void assertPatientHasAllProperties(Patient patient) throws Exception {
-	    
+    	// compare UUID
+    	assertEquals("UUID is not valid", RemoteFormEntryUtilTest.SAMPLE_XML_PERSON_UUID, patient.getUuid());
+    	
     	// compare the names
     	Set<PersonName> names = patient.getNames();
     	assertTrue(names.size() + " is not valid", names.size() == 2);
