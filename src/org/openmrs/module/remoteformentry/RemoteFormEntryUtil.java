@@ -1,9 +1,6 @@
 package org.openmrs.module.remoteformentry;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -247,65 +242,6 @@ public class RemoteFormEntryUtil {
 		File generatedReturnDataDir = getGeneratedReturnDataDir();
 		
 		return new File(generatedReturnDataDir, "generatedDataFor" + "-" + location.getLocationId());
-	}
-	
-	/**
-	 * Return the zip file for the returning to the location given
-	 * 
-	 * @return Zip file with return data for the given location
-	 * @throws IOException 
-	 */
-	public static File getGeneratedReturnZipForLocation(Location location) throws IOException {
-		
-		File remoteFormEntryDirectory = OpenmrsUtil.getDirectoryInApplicationDataDirectory("remoteformentry");
-		File returnedDataDirectory = new File(remoteFormEntryDirectory, RemoteFormEntryConstants.RETURNED_DATA_DIRECTORY_NAME);
-		if (!returnedDataDirectory.exists()) {
-			returnedDataDirectory.mkdir();
-		}
-		
-		String filename = "returnData-for-remote-site-" + RemoteFormEntryUtil.getDownloadSuffix(location) + ".zip";
-		
-		File outputFile = new File(returnedDataDirectory, filename);
-		FileOutputStream zipFileOutputStream = new FileOutputStream(outputFile);
-		
-		ZipOutputStream zos			= new ZipOutputStream(zipFileOutputStream);
-		ZipEntry zipEntry			= null;
-		
-		// add the main database dump
-		File generatedData = RemoteFormEntryUtil.getGeneratedReturnDataFile();
-		if (log.isDebugEnabled())
-			log.debug("Zipping generated sql: " + generatedData.getAbsolutePath());
-
-		FileInputStream inputStream = new FileInputStream(generatedData);
-
-		// name this entry so we can retrieve it later
-		zipEntry = new ZipEntry(RemoteFormEntryUtil.GENERATED_DATA_FILENAME);
-		// Add ZIP entry to output stream.
-		zos.putNextEntry(zipEntry);
-		
-		// Transfer bytes from the generated zip to the new return zip
-		writeEntry(inputStream, zos);
-		inputStream.close();
-
-		// add each site/location specific sql file
-		File locationSpecificFolder = RemoteFormEntryUtil.getGeneratedReturnDataFolderForLocation(location);
-		
-		for (File sqlFile : locationSpecificFolder.listFiles()) {
-			FileInputStream sqlFileInputStream = new FileInputStream(sqlFile);
-			// name this entry so we can retrieve it later
-			zipEntry = new ZipEntry(sqlFile.getName());
-			// Add ZIP entry to output stream.
-			zos.putNextEntry(zipEntry);
-			
-			// Transfer bytes from the generated zip to the new return zip
-			writeEntry(sqlFileInputStream, zos);
-			sqlFileInputStream.close();
-		}
-
-		zos.close();
-		zipFileOutputStream.close();
-		
-		return outputFile;
 	}
 	
 	/**
@@ -942,24 +878,6 @@ public class RemoteFormEntryUtil {
 					+ RemoteFormEntryConstants.PERSON_UUID, doc);
 		} catch (XPathExpressionException e) { }
 		return uuid;
-	}
-	
-	/**
-	 * Write the given inputStream to the given zipoutputstream
-	 * 
-	 * @param inputStream
-	 * @param zos
-	 * @throws IOException 
-	 */
-	private static void writeEntry(FileInputStream inputStream, ZipOutputStream zos) throws IOException {
-		int buffer = 2048;
-		int count;
-		byte data[] = new byte[buffer];
-
-		// write the entry data
-		while ((count = inputStream.read(data, 0, buffer)) != -1) {
-			zos.write(data, 0, count);
-		}
 	}
 	
 }

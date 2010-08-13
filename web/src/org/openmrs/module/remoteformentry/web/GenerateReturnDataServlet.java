@@ -1,8 +1,6 @@
 package org.openmrs.module.remoteformentry.web;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Date;
 
 import javax.servlet.ServletException;
@@ -12,12 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.Location;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.remotedatatransfer.RemoteDataTransferServer;
-import org.openmrs.module.remotedatatransfer.RemoteDataTransferService;
 import org.openmrs.module.remoteformentry.RemoteFormEntryService;
-import org.openmrs.module.remoteformentry.RemoteFormEntryUtil;
 import org.openmrs.web.WebConstants;
 
 /**
@@ -54,18 +48,6 @@ public class GenerateReturnDataServlet extends HttpServlet {
 		RemoteFormEntryService remoteService = (RemoteFormEntryService)Context.getService(RemoteFormEntryService.class);
 		remoteService.generateDataFile();
 		
-		RemoteDataTransferService rdtService = Context.getService(RemoteDataTransferService.class);
-		
-		Collection<Location> locations = RemoteFormEntryUtil.getRemoteLocations().keySet();
-		for(Location loc:locations){
-			for(Location locInGroup:RemoteFormEntryUtil.getRemoteLocations().get(loc)){
-				for(RemoteDataTransferServer server:rdtService.getServersByLocation(locInGroup)){
-					FileInputStream fis = new FileInputStream(RemoteFormEntryUtil.getGeneratedReturnZipForLocation(locInGroup));
-					rdtService.sendData(fis, server, "remoteformentry", "RFE_ReturnData.zip");
-				}
-			}
-		}
-
 		Date endTime = new Date();
 		
 		log.debug("Done calling generation process for the 'return data'");
