@@ -17,7 +17,6 @@ import org.openmrs.PatientIdentifier;
 import org.openmrs.Person;
 import org.openmrs.api.APIException;
 import org.openmrs.api.FormService;
-import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.formentry.FormEntryError;
 import org.openmrs.module.formentry.FormEntryService;
@@ -85,6 +84,9 @@ public class RemoteFormEntryPendingProcessor{
 			XPath xp = xpf.newXPath();
 			Document doc = db.parse(IOUtils.toInputStream(formData));
 			formId = Integer.parseInt(xp.evaluate("/form/@id", doc));
+			
+			// remove duplicate person attributes from the doc
+			RemoteFormEntryUtil.removeDuplicatePersonAttributes(doc, xp);
 			
 			// try to get the form
 			Form form = formService.getForm(formId);

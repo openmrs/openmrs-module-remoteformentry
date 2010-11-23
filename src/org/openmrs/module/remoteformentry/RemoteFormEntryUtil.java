@@ -578,6 +578,66 @@ public class RemoteFormEntryUtil {
 	}
 	
 	/**
+	 * encode a person_attribute node into a simple string
+	 * 
+	 * @param node
+	 * @param xp
+	 * @return a string representing the person attribute
+	 * @throws XPathExpressionException
+	 */
+	public static String encodePersonAttributeNode(Node node, XPath xp)
+			throws XPathExpressionException {
+		return encodedAttribute(
+				xp.evaluate(RemoteFormEntryConstants.PERSON_ATTRIBUTE_TYPE, node),
+				xp.evaluate(RemoteFormEntryConstants.PERSON_ATTRIBUTE_VALUE, node),
+				xp.evaluate(RemoteFormEntryConstants.PERSON_ATTRIBUTE_VOIDED, node));
+	}
+	
+
+	/**
+	 * used internally to encode attributes into a hash string
+	 * 
+	 * @param id
+	 * @param value
+	 * @param voided
+	 * @return hash string representation of the attributes
+	 */
+	public static String encodedAttribute(String id, String value, String voided) {
+		return id + "^" + value + "^" + voided;
+	}
+	
+	/**
+	 * remove duplicate person attributes from the doc
+	 * 
+	 * @param doc
+	 * @param xp
+	 * @throws XPathExpressionException
+	 */
+	public static void removeDuplicatePersonAttributes(Document doc, XPath xp)
+			throws XPathExpressionException {
+		List<String> knownAttributes = new ArrayList<String>();
+
+		// get all person attribute nodes
+		NodeList nodeList = (NodeList) xp.evaluate(
+				RemoteFormEntryConstants.nodePrefix
+						+ RemoteFormEntryConstants.PERSON_ATTRIBUTE, doc,
+				XPathConstants.NODESET);
+
+		// loop over the nodes
+		if (nodeList != null)
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				Node currentNode = nodeList.item(i);
+	
+				String thisAttribute = RemoteFormEntryUtil
+						.encodePersonAttributeNode(currentNode, xp);
+				if (knownAttributes.contains(thisAttribute))
+					currentNode.getParentNode().removeChild(currentNode);
+				else
+					knownAttributes.add(thisAttribute);
+			}
+	}
+
+	/**
 	 * Add demographics/properties (like tribe, etc) to the given patient object
 	 * 
 	 * @param patient Patient object to modify
@@ -656,6 +716,59 @@ public class RemoteFormEntryUtil {
 						+ "'; updating to new UUID.");
 			person.setUuid(uuid);
 		}
+	}
+
+	/**
+	 * sets person attributes on patient if not already present
+	 * 
+	 * @param patient
+	 * @param doc
+	 * @param xp
+	 * @param enterer
+	 * @throws XPathExpressionException
+	 * @should not duplicate existing attributes
+	 * @should void previously unvoided attributes if no match exists
+	 */
+	public static void setPersonAttributes(Patient patient, Document doc,
+			XPath xp, User enterer) throws XPathExpressionException {
+		// create a map of hashed attributes to corresponding attributes
+		Map<String, PersonAttribute> knownAttributes = new HashMap<String, PersonAttribute>();
+		for (PersonAttribute attribute: patient.getAttributes())
+			if (attribute != null)
+				knownAttributes
+						.put(encodedAttribute(attribute.getAttributeType()
+								.getId().toString(), attribute.getValue(),
+								attribute.getVoided().toString()), attribute);
+		
+		// add all person attributes if patient doesn't have them yet
+		for (PersonAttribute newPersonAttribute : getPersonAttributes(doc, xp, enterer)) {
+
+			// check if it already exists (voided or non-voided)
+			if (!knownAttributes.keySet().contains(encodedAttribute(
+					newPersonAttribute.getAttributeType().getId().toString(),
+					newPersonAttribute.getValue(), 
+					newPersonAttribute.getVoided().toString()))) {
+				
+				// whether the old one was voided or not, we should add it
+				patient.addAttribute(newPersonAttribute);
+				
+				if (newPersonAttribute.isVoided()) {
+					// the voided version does not exist; is the non-voided one there?
+					String alternate = encodedAttribute(
+							newPersonAttribute.getAttributeType().getId().toString(),
+							newPersonAttribute.getValue(),
+							Boolean.TRUE.toString());
+					
+					if (knownAttributes.keySet().contains(alternate)) {
+						// update the previously non-voided attribute with voided values
+						PersonAttribute currentAttribute = knownAttributes.get(alternate);
+						currentAttribute.setVoided(true);
+						currentAttribute.setVoidedBy(enterer);
+						currentAttribute.setDateVoided(new Date());
+					}
+				}
+			}
+		}		
 	}
 	
 	/**

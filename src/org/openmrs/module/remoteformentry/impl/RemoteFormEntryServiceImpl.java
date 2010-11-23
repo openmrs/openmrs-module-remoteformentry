@@ -12,9 +12,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.xml.xpath.XPath;
@@ -49,7 +51,6 @@ import org.openmrs.module.remoteformentry.RemoteFormEntryPendingQueue;
 import org.openmrs.module.remoteformentry.RemoteFormEntryService;
 import org.openmrs.module.remoteformentry.RemoteFormEntryUtil;
 import org.openmrs.module.remoteformentry.db.RemoteFormEntryDAO;
-import org.openmrs.module.remoteformentry.impl.RemoteFormEntryServiceImpl.FilenameComparator;
 import org.openmrs.scheduler.SchedulerService;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.util.OpenmrsUtil;
@@ -363,47 +364,37 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 		}
 
 		// add the patient identifier if patient doesn't have it yet
-		for (PatientIdentifier newPersonIdentifier : RemoteFormEntryUtil.getPatientIdentifiers(doc, xp, enterer)) {
+		for (PatientIdentifier newPersonIdentifier : RemoteFormEntryUtil
+				.getPatientIdentifiers(doc, xp, enterer)) {
+			// reassign it each time since the identifier could have been added
+			// in the last iteration of this loop
+			Set<PatientIdentifier> patientIdentifiers = patient
+					.getIdentifiers();
 			boolean found = false;
-			for (PatientIdentifier currentIdentifier : patient.getIdentifiers()) {
-				if (currentIdentifier.equalsContent(newPersonIdentifier)) {
-					found = true;
-					if (newPersonIdentifier.isVoided()) {
-						currentIdentifier.setVoided(true);
-						currentIdentifier.setVoidedBy(enterer);
-						currentIdentifier.setDateVoided(new Date());
+			if (patientIdentifiers != null && !patientIdentifiers.isEmpty()) {
+				// loop over existing identifiers to match on new one
+				Iterator<PatientIdentifier> iter = patientIdentifiers.iterator();
+				while (iter.hasNext() && !found) {
+					PatientIdentifier currentIdentifier = iter.next();
+					if (currentIdentifier.equalsContent(newPersonIdentifier)) {
+						found = true;
+						if (newPersonIdentifier.isVoided()) {
+							currentIdentifier.setVoided(true);
+							currentIdentifier.setVoidedBy(enterer);
+							currentIdentifier.setDateVoided(new Date());
+						}
+						currentIdentifier.setPreferred(newPersonIdentifier
+								.getPreferred());
 					}
-					currentIdentifier.setPreferred(newPersonIdentifier.getPreferred());
-					break;
 				}
 			}
 			
 			if (!found)
 				patient.addIdentifier(newPersonIdentifier);
-			
 		}
-		
-		// add all person attributes if patient doesn't have them yet
-		for (PersonAttribute newPersonAttribute : RemoteFormEntryUtil.getPersonAttributes(doc, xp, enterer)) {
-			boolean found = false;
-			for (PersonAttribute currentAttribute : patient.getAttributes()) {
-				// we want to use .equals() here instead of .equalsContent() because
-				// of the "voided" attribute needing to be included in the equalsContent
-				if (currentAttribute.equals(newPersonAttribute)) {
-					found = true;
-					if (newPersonAttribute.isVoided()) {
-						currentAttribute.setVoided(true);
-						currentAttribute.setVoidedBy(enterer);
-						currentAttribute.setDateVoided(new Date());
-					}
-					break;
-				}
-			}
-			
-			if (!found && newPersonAttribute != null)
-				patient.addAttribute(newPersonAttribute);
-			
-		}
+
+		// set the person attributes
+		RemoteFormEntryUtil.setPersonAttributes(patient, doc, xp, enterer);
 		
 		// set the person properties (like gender, death status, birthdate, etc)
 		RemoteFormEntryUtil.setPersonProperties(patient, doc, xp, enterer);
