@@ -6,13 +6,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
@@ -46,6 +49,7 @@ import org.openmrs.module.remoteformentry.RemoteFormEntryPendingQueue;
 import org.openmrs.module.remoteformentry.RemoteFormEntryService;
 import org.openmrs.module.remoteformentry.RemoteFormEntryUtil;
 import org.openmrs.module.remoteformentry.db.RemoteFormEntryDAO;
+import org.openmrs.module.remoteformentry.impl.RemoteFormEntryServiceImpl.FilenameComparator;
 import org.openmrs.scheduler.SchedulerService;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.util.OpenmrsUtil;
@@ -54,7 +58,6 @@ import org.w3c.dom.Document;
 
 /**
  * Remote data entry-related services
- * 
  */
 public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 
@@ -63,7 +66,26 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 	private RemoteFormEntryDAO dao;
 
 	private Boolean isGeneratingDataFile = false;
-	
+
+	/**
+	 * private comparator for use in ordering files
+	 */
+	private final FilenameComparator filenameComparator = new FilenameComparator();
+
+	/**
+	 * comparator class to order files by filename, ascending
+	 */
+	class FilenameComparator implements Comparator<File> {
+
+		public int compare(File arg0, File arg1) {
+			if (arg0.getName() == null)
+				return -1;
+			if (arg1.getName() == null)
+				return 1;
+			return arg0.getName().compareTo(arg1.getName());
+		}
+	}
+
 	/**
 	 * Get the remote form entry data access object
 	 * 
@@ -166,8 +188,11 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 	public RemoteFormEntryPendingQueue getNextRemoteFormEntryPendingQueue() {
 		File queueDir = RemoteFormEntryUtil.getPendingQueueDir();
 
+		List<File> fileList = Arrays.asList(queueDir.listFiles());
+		Collections.sort(fileList, filenameComparator);
+		
 		// return the first queue item
-		for (File file : queueDir.listFiles()) {
+		for (File file : fileList) {
 			RemoteFormEntryPendingQueue queueItem = new RemoteFormEntryPendingQueue();
 			queueItem.setFileSystemUrl(file.getAbsolutePath());
 			return queueItem;
@@ -594,10 +619,6 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 		List<RemoteFormEntryPendingQueue> pendingQueueItems = getRemoteFormEntryPendingQueues();
 
 		if (pendingQueueItems.size() > 0) {
-
-			// TODO: is the first file the oldest file always?
-			Date oldestDateModified = pendingQueueItems.get(0).getDateCreated();
-			long oldestModified = oldestDateModified.getTime();
 
 			File[] files = ackDir.listFiles();
 
