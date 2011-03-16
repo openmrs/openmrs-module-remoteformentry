@@ -16,6 +16,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Concept;
@@ -624,17 +625,16 @@ public class RemoteFormEntryUtil {
 				XPathConstants.NODESET);
 
 		// loop over the nodes
-		if (nodeList != null)
-			for (int i = 0; i < nodeList.getLength(); i++) {
-				Node currentNode = nodeList.item(i);
-	
-				String thisAttribute = RemoteFormEntryUtil
-						.encodePersonAttributeNode(currentNode, xp);
-				if (knownAttributes.contains(thisAttribute))
-					currentNode.getParentNode().removeChild(currentNode);
-				else
-					knownAttributes.add(thisAttribute);
-			}
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node currentNode = nodeList.item(i);
+
+			String thisAttribute = RemoteFormEntryUtil
+					.encodePersonAttributeNode(currentNode, xp);
+			if (knownAttributes.contains(thisAttribute))
+				currentNode.getParentNode().removeChild(currentNode);
+			else
+				knownAttributes.add(thisAttribute);
+		}
 	}
 
 	/**
@@ -820,80 +820,85 @@ public class RemoteFormEntryUtil {
 			
 			// get the type id
 			String typeId = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_TYPE, currentNode);
-			if (typeId == null || typeId.length() == 0) {
+			if (StringUtils.isBlank(typeId)) {
 				log.error("skipping a relationship with no relationship type id. node: "
 				        + currentNode.getTextContent());
 			} else {
-				RelationshipType pat = Context.getPersonService().getRelationshipType(Integer.valueOf(typeId));
-				relationship.setRelationshipType(pat);
-
-				// get the other person from our db
-				String otherPersonsUuid = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_UUID, currentNode);
-				Patient patient = Context.getPatientService().getPatientByUuid(otherPersonsUuid);
-				if (patient == null) {
-					// the person was created on the remote server, create the person stub from the information 
-					// passed to us
-					patient = new Patient();
-					
-					// set the identifier (if is one) on the new person/patient
-					String identifierStr = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER, currentNode);
-					String identifierTypeId = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_TYPE, currentNode);
-					String locationId = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_LOC, currentNode);
-					if (identifierStr != null) {
-						PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(Integer.valueOf(identifierTypeId));
-						Location loc = Context.getLocationService().getLocation(locationId);
-						PatientIdentifier identifier = new PatientIdentifier(identifierStr, pit, loc);
-						patient.addIdentifier(identifier);
+				try {
+					RelationshipType pat = Context.getPersonService().getRelationshipType(Integer.valueOf(typeId));
+					relationship.setRelationshipType(pat);
+	
+					// get the other person from our db
+					String otherPersonsUuid = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_UUID, currentNode);
+					Patient patient = Context.getPatientService().getPatientByUuid(otherPersonsUuid);
+					if (patient == null) {
+						// the person was created on the remote server, create the person stub from the information 
+						// passed to us
+						patient = new Patient();
+						
+						// set the identifier (if is one) on the new person/patient
+						String identifierStr = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER, currentNode);
+						String identifierTypeId = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_TYPE, currentNode);
+						String locationId = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_IDENTIFIER_LOC, currentNode);
+						if (identifierStr != null) {
+							PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(Integer.valueOf(identifierTypeId));
+							Location loc = Context.getLocationService().getLocation(locationId);
+							PatientIdentifier identifier = new PatientIdentifier(identifierStr, pit, loc);
+							patient.addIdentifier(identifier);
+						}
+						
+						// get the birthdate
+						String birthdateString = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_BIRTHDATE, currentNode);
+						try {
+							patient.setBirthdate(hl7DateFormat.parse(birthdateString));
+						}
+						catch (ParseException e) {
+							log.error("Error getting birthdate from string for relationship person uuid: " + otherPersonsUuid, e);
+						}
+						
+						// get the gender
+						String gender = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GENDER, currentNode);
+						setGender(patient, gender);
+						
+						// set the person's name
+						PersonName pn = new PersonName();
+						pn.setGivenName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GIVENNAME, currentNode));
+						pn.setMiddleName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_MIDDLENAME, currentNode));
+						pn.setFamilyName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_FAMILYNAME, currentNode));
+						patient.addName(pn);
+						
+						// now save the patient to the db so we have a primary key
+						Context.getPatientService().savePatient(patient);
 					}
 					
-					// get the birthdate
-					String birthdateString = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_BIRTHDATE, currentNode);
-					try {
-						patient.setBirthdate(hl7DateFormat.parse(birthdateString));
+					String personAorB = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_A_OR_B, currentNode);
+					personAorB = personAorB.trim(); // take out whitespace
+					if ("B".equals(personAorB)) { // the person defined here is person B.  then personA is the parent patient object for the current form  
+						relationship.setPersonA(createdPatient);
+						relationship.setPersonB(patient);
 					}
-					catch (ParseException e) {
-						log.error("Error getting birthdate from string for relationship person uuid: " + otherPersonsUuid, e);
+					else { // "this" is person B is the parent person for this whole message
+						relationship.setPersonA(patient);
+						relationship.setPersonB(createdPatient);
 					}
 					
-					// get the gender
-					String gender = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GENDER, currentNode);
-					setGender(patient, gender);
+					// get the voided status
+					String voidStatus = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_VOIDED, currentNode);
+					if (!relationship.isVoided() && voidStatus != null && voidStatus.equals("true")) {
+						relationship.setVoided(true);
+						relationship.setVoidReason("Voided at remote");
+						relationship.setVoidedBy(enterer);
+						relationship.setDateVoided(new Date());
+					}
 					
-					// set the person's name
-					PersonName pn = new PersonName();
-					pn.setGivenName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_GIVENNAME, currentNode));
-					pn.setMiddleName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_MIDDLENAME, currentNode));
-					pn.setFamilyName(xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_PERSON_FAMILYNAME, currentNode));
-					patient.addName(pn);
+					relationship.setCreator(enterer);
+					relationship.setDateCreated(new Date());
 					
-					// now save the patient to the db so we have a primary key
-					Context.getPatientService().savePatient(patient);
+					relationships.add(relationship);
+				} catch (NumberFormatException e) {
+					log.error("skipping a relationship with a numeric format error. node: "
+							+ currentNode.getTextContent(), e);
 				}
-				
-				String personAorB = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_A_OR_B, currentNode);
-				personAorB = personAorB.trim(); // take out whitespace
-				if ("B".equals(personAorB)) { // the person defined here is person B.  then personA is the parent patient object for the current form  
-					relationship.setPersonA(createdPatient);
-					relationship.setPersonB(patient);
-				}
-				else { // "this" is person B is the parent person for this whole message
-					relationship.setPersonA(patient);
-					relationship.setPersonB(createdPatient);
-				}
-				
-				// get the voided status
-				String voidStatus = xp.evaluate(RemoteFormEntryConstants.PERSON_RELATIONSHIP_VOIDED, currentNode);
-				if (!relationship.isVoided() && voidStatus != null && voidStatus.equals("true")) {
-					relationship.setVoided(true);
-					relationship.setVoidReason("Voided at remote");
-					relationship.setVoidedBy(enterer);
-					relationship.setDateVoided(new Date());
-				}
-				
-				relationship.setCreator(enterer);
-				relationship.setDateCreated(new Date());
-				
-				relationships.add(relationship);
 			}
 		}
 		

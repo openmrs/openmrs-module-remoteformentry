@@ -6,7 +6,7 @@
 	<!-- Base Module Properties -->
 	<id>remoteformentry</id>
 	<name>Remote FormEntry</name>
-	<version>2.9.5</version>
+	<version>2.9.6</version>
 	<package>org.openmrs.module.@MODULE_ID@</package>
 	<author>Ben Wolfe</author>
 	<description>

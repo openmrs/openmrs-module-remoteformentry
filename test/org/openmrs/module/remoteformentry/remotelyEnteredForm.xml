@@ -62,7 +62,7 @@
       <person_address.voided openmrs_attribute="voided" openmrs_table="person_address">false</person_address.voided>
     </person_address>
     <person_relationship>
-      <person_relationship.person_relationship_type_id openmrs_attribute="person_relationship_type_id" openmrs_table="person_relationship"></person_relationship.person_relationship_type_id>
+      <person_relationship.person_relationship_type_id openmrs_attribute="person_relationship_type_id" openmrs_table="person_relationship"> </person_relationship.person_relationship_type_id>
       <person_relationship.a_or_b openmrs_attribute="a_or_b" openmrs_table="person_relationship"> A  </person_relationship.a_or_b>
       <person_relationship.uuid openmrs_attribute="uuid" openmrs_table="person_relationship"></person_relationship.uuid>
       <person_relationship.identifier openmrs_attribute="identifier" openmrs_table="person_relationship"></person_relationship.identifier>

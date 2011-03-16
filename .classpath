@@ -35,13 +35,13 @@
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/simple/simple-xml-1.6.1-mod.jar"/>
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/liquibase/liquibase-1.9.4-mod.jar"/>
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/tomcat/jsp-api.jar"/>
-	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/jstl/jstl-1.1.jar" />
+	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/jstl/jstl-1.1.jar"/>
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/dwr/dwr-205.jar"/>
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/jakarta-taglibs/taglibs-standard-1.1.jar"/>
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/slf4j/jcl-over-slf4j-1.5.6.jar"/>
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/slf4j/slf4j-api-1.5.6.jar"/>
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/slf4j/slf4j-log4j12-1.5.6.jar"/>
 	<classpathentry kind="lib" path="/openmrs-1.5.x/lib/commons-lang/commons-lang-2.4.jar"/>
-	
+	<classpathentry kind="lib" path="lib-common/commons-lang-2.4.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

@@ -36,7 +36,6 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 
 	/**
 	 * @see {@link RemoteFormEntryUtil#getRelationships(Patient,Document,XPath,User)}
-	 * 
 	 */
 	@Test
 	@Verifies(value = "should not process relationship mappings with blank RelationshipTypeIds", method = "getRelationships(Patient,Document,XPath,User)")
@@ -71,7 +70,6 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 
 	/**
 	 * @see {@link RemoteFormEntryUtil#setPersonAttributes(Patient,Document,XPath,User)}
-	 * 
 	 */
 	@Test
 	@Verifies(value = "should not duplicate existing attributes", method = "setPersonAttributes(Patient,Document,XPath,User)")
@@ -150,7 +148,6 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 
 	/**
 	 * @see {@link RemoteFormEntryUtil#setPersonAttributes(Patient,Document,XPath,User)}
-	 * 
 	 */
 	@Test
 	@Verifies(value = "should void previously unvoided attributes if no match exists", method = "setPersonAttributes(Patient,Document,XPath,User)")
