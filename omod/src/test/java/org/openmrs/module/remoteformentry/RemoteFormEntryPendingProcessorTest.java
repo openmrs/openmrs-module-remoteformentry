@@ -39,7 +39,7 @@ public class RemoteFormEntryPendingProcessorTest extends
 				.newDocumentBuilder();
 		Document doc = db
 				.parse(new File(
-						"test/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
+						"src/test/resources/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
 		XPath xp = XPathFactory.newInstance().newXPath();
 
 		// get the Patient
@@ -75,7 +75,7 @@ public class RemoteFormEntryPendingProcessorTest extends
 				.newDocumentBuilder();
 		Document doc = db
 				.parse(new File(
-						"test/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
+						"src/test/resources/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
 		XPath xp = XPathFactory.newInstance().newXPath();
 
 		// get the Patient
@@ -100,7 +100,7 @@ public class RemoteFormEntryPendingProcessorTest extends
 				.newDocumentBuilder();
 		Document doc = db
 				.parse(new File(
-						"test/org/openmrs/module/remoteformentry/remotelyEnteredFormNoUUID.xml"));
+						"src/test/resources/org/openmrs/module/remoteformentry/remotelyEnteredFormNoUUID.xml"));
 		XPath xp = XPathFactory.newInstance().newXPath();
 
 		// get the Patient
@@ -120,7 +120,7 @@ public class RemoteFormEntryPendingProcessorTest extends
 				.newDocumentBuilder();
 		Document doc = db
 				.parse(new File(
-						"test/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
+						"src/test/resources/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
 		XPath xp = XPathFactory.newInstance().newXPath();
 
 		// get the Patient

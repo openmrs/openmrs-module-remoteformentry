@@ -1,7 +1,6 @@
 package org.openmrs.module.remoteformentry;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,6 +21,7 @@ import org.openmrs.Person;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.Relationship;
+import org.openmrs.RelationshipType;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
@@ -46,7 +46,7 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 				.newDocumentBuilder();
 		Document doc = db
 				.parse(new File(
-						"test/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
+						"src/test/resources/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
 		XPath xp = XPathFactory.newInstance().newXPath();
 		Patient createdPatient = new Patient(1);
 		User enterer = new User(1);
@@ -66,6 +66,48 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 		Assert.assertEquals(
 				"relationship with a blank type id is being processed",
 				nodeList.getLength() - 1, relationships.size());
+	}
+
+	/**
+	 * @see {@link RemoteFormEntryUtil#getRelationships(Patient,Document,XPath,User)}
+	 */
+	@Test
+	@Verifies(value = "should process relatives with blank identifiers", method = "getRelationships(Patient,Document,XPath,User)")
+	public void getRelationships_shouldProcessRelativesWithBlankIdentifiers()
+			throws Exception {
+		// build all the variables that are passed to getRelationships()
+		DocumentBuilder db = DocumentBuilderFactory.newInstance()
+				.newDocumentBuilder();
+		Document doc = db
+				.parse(new File(
+						"src/test/resources/org/openmrs/module/remoteformentry/remotelyEnteredFormWithBlankRelativeIdentifier.xml"));
+		XPath xp = XPathFactory.newInstance().newXPath();
+		Patient createdPatient = new Patient(1);
+		User enterer = new User(1);
+
+		// need the list of nodes to get the pre-evaluation size
+		NodeList nodeList = (NodeList) xp.evaluate(
+				RemoteFormEntryConstants.nodePrefix
+						+ RemoteFormEntryConstants.PERSON_RELATIONSHIP, doc,
+				XPathConstants.NODESET);
+
+		// call the utility to get the relationships
+		List<Relationship> relationships = RemoteFormEntryUtil
+				.getRelationships(createdPatient, doc, xp, enterer);
+
+		// there should be two relationships
+		Assert.assertEquals("something went horribly wrong", 2, relationships.size());
+		
+		for (Relationship rel : relationships) {
+    		if (rel.getRelationshipType().equals(new RelationshipType(1))) {
+				// the relationship of type "1" should be to a person who is not a patient
+    			Assert.assertFalse(rel.getPersonA().isPatient());
+    		}
+    		else {
+				// the other relationship should be to a person who is patient
+    			Assert.assertTrue(rel.getPersonB().isPatient());
+    		}
+    	}
 	}
 
 	/**
@@ -98,10 +140,8 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 		Set<PersonAttribute> pas = new TreeSet<PersonAttribute>();
 		pas.add(pa1);
 		pas.add(pa2);
-
 		person.setAttributes(pas);
-		person = Context.getPersonService().savePerson(person);
-
+		
 		// create the actual patient
 
 		Patient patient = new Patient(person);
@@ -122,7 +162,7 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 		pi2.setPreferred(true);
 		pi2.setVoided(false);
 
-		Set<PatientIdentifier> pis = new HashSet<PatientIdentifier>();
+		Set<PatientIdentifier> pis = new TreeSet<PatientIdentifier>();
 		pis.add(pi1);
 		pis.add(pi2);
 		patient.setIdentifiers(pis);
@@ -134,7 +174,7 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 				.newDocumentBuilder();
 		Document doc = db
 				.parse(new File(
-						"test/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
+						"src/test/resources/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
 		XPath xp = XPathFactory.newInstance().newXPath();
 		User enterer = new User(1);
 
@@ -164,9 +204,7 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 		pa.setAttributeType(new PersonAttributeType(8));
 		pa.setValue("blammo");
 		pa.setVoided(false);
-
 		person.addAttribute(pa);
-		person = Context.getPersonService().savePerson(person);
 
 		// create the actual patient
 
@@ -188,7 +226,7 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 		pi2.setPreferred(true);
 		pi2.setVoided(false);
 
-		Set<PatientIdentifier> pis = new HashSet<PatientIdentifier>();
+		Set<PatientIdentifier> pis = new TreeSet<PatientIdentifier>();
 		pis.add(pi1);
 		pis.add(pi2);
 		patient.setIdentifiers(pis);
@@ -200,7 +238,7 @@ public class RemoteFormEntryUtilTest extends BaseModuleContextSensitiveTest {
 				.newDocumentBuilder();
 		Document doc = db
 				.parse(new File(
-						"test/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
+						"src/test/resources/org/openmrs/module/remoteformentry/remotelyEnteredForm.xml"));
 		XPath xp = XPathFactory.newInstance().newXPath();
 		User enterer = new User(1);
 
