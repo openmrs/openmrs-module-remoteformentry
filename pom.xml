@@ -3,7 +3,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>remoteformentry</artifactId>
-	<version>2.9.7</version>
+	<version>2.9.8-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Remote FormEntry</name>
 	<description>Parent project for Remote FormEntry</description>
@@ -11,9 +11,9 @@
 	<url>http://openmrs.org</url>
 
 	<scm>
-		<connection>scm:svn:http://svn.openmrs.org/openmrs-modules/remoteformentry/tags/remoteformentry-2.9.7</connection>
-		<developerConnection>scm:svn:http://svn.openmrs.org/openmrs-modules/remoteformentry/tags/remoteformentry-2.9.7</developerConnection>
-		<url>http://svn.openmrs.org/openmrs-modules/remoteformentry/tags/remoteformentry-2.9.7</url>
+		<connection>scm:svn:http://svn.openmrs.org/openmrs-modules/remoteformentry/trunk/</connection>
+		<developerConnection>scm:svn:http://svn.openmrs.org/openmrs-modules/remoteformentry/trunk/</developerConnection>
+		<url>http://svn.openmrs.org/openmrs-modules/remoteformentry/trunk/</url>
 	</scm>
 
 	<modules>
