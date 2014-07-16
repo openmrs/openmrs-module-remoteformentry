@@ -10,12 +10,6 @@
 
 	<url>http://openmrs.org</url>
 
-	<scm>
-		<connection>scm:svn:http://svn.openmrs.org/openmrs-modules/remoteformentry/tags/remoteformentry-2.9.7</connection>
-		<developerConnection>scm:svn:http://svn.openmrs.org/openmrs-modules/remoteformentry/tags/remoteformentry-2.9.7</developerConnection>
-		<url>http://svn.openmrs.org/openmrs-modules/remoteformentry/tags/remoteformentry-2.9.7</url>
-	</scm>
-
 	<modules>
 		<module>api</module>
 		<module>omod</module>
@@ -39,7 +33,7 @@
 			<dependency>
 				<groupId>org.openmrs.module</groupId>
 				<artifactId>formentry</artifactId>
-				<version>4.5.9.3</version>
+				<version>5.0.7-SNAPSHOT</version>
 				<type>jar</type>
 				<scope>provided</scope>
 			</dependency>
@@ -69,7 +63,7 @@
 	</dependencyManagement>
 
 	<properties>
-		<openMRSVersion>1.5.0</openMRSVersion>
+		<openMRSVersion>1.9.0</openMRSVersion>
 	</properties>
 
 	<build>
