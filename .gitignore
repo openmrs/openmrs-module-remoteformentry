@@ -1,11 +1,11 @@
 # maven ignores
-target/
+target/*
 
 # IntelliJ ignores
 *.iml
 *.ipr
 *.iws
-.idea/
+.idea/*
 api/*.iml
 omod/*.iml
 

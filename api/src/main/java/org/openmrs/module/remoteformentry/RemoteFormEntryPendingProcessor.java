@@ -1,6 +1,7 @@
 package org.openmrs.module.remoteformentry;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,6 +22,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.formentry.FormEntryError;
 import org.openmrs.module.formentry.FormEntryService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 
 /**
@@ -40,8 +42,10 @@ import org.w3c.dom.Document;
 @Transactional
 public class RemoteFormEntryPendingProcessor{
 
-	private static final Log log = LogFactory
-	.getLog(RemoteFormEntryPendingProcessor.class);
+	private static final AtomicReference<Log> log = new AtomicReference<Log>(LogFactory
+            .getLog(RemoteFormEntryPendingProcessor.class));
+
+    private static final int FORMENTRY_ERROR_COL_LENGTH=255;
 
 	private DocumentBuilderFactory documentBuilderFactory;
 	private XPathFactory xPathFactory;
@@ -66,7 +70,7 @@ public class RemoteFormEntryPendingProcessor{
 	 * @param pendingQueue entry to be transformed
 	 */
 	public void processRemoteFormEntryPendingQueue(RemoteFormEntryPendingQueue pendingQueue) {
-		log.debug("Transforming form entry queue");
+		log.get().debug("Transforming form entry queue");
 		
 		RemoteFormEntryService remoteFormEntryService = (RemoteFormEntryService)Context.getService(RemoteFormEntryService.class);
 		FormService formService = Context.getFormService();
@@ -97,8 +101,8 @@ public class RemoteFormEntryPendingProcessor{
 			
 			// if the patient wasn't found...
 			if (patient == null) {
-				if (log.isDebugEnabled())
-					log.debug("patient is null for pendingQueue: " + pendingQueue.getRemoteFormEntryPendingQueueId());
+				if (log.get().isDebugEnabled())
+					log.get().debug("patient is null for pendingQueue: " + pendingQueue.getRemoteFormEntryPendingQueueId());
 				
 				// this patient has yet to be defined.  Do we need to create it?
 				List<EncounterType> initialEncounterTypes = remoteFormEntryService.getInitialEncounterTypes();
@@ -122,8 +126,8 @@ public class RemoteFormEntryPendingProcessor{
 				}
 				
 			} else {
-				if (log.isDebugEnabled())
-					log.debug("patientid is " + patient + " for pendingQueue: " + pendingQueue.getRemoteFormEntryPendingQueueId());
+				if (log.get().isDebugEnabled())
+					log.get().debug("patientid is " + patient + " for pendingQueue: " + pendingQueue.getRemoteFormEntryPendingQueueId());
 				
 				// patient exists, update their information from the data on the form
 				remoteFormEntryService.updatePatientInDatabase(patient, doc, xp);
@@ -141,8 +145,8 @@ public class RemoteFormEntryPendingProcessor{
 			setFatalError(pendingQueue, t.getMessage(),
 			              errorDetails);
 			
-			log.error("Error while parsing remoteformentry pending queue ("
-			          + pendingQueue.getRemoteFormEntryPendingQueueId() + ")", t);
+			log.get().error("Error while parsing remoteformentry pending queue ("
+                    + pendingQueue.getRemoteFormEntryPendingQueueId() + ")", t);
 		}
 	}
 
@@ -222,7 +226,7 @@ public class RemoteFormEntryPendingProcessor{
 			remoteService = (RemoteFormEntryService)Context.getService(RemoteFormEntryService.class);
 		}
 		catch (APIException e) {
-			log.debug("RemoteFormEntryService not found");
+			log.get().debug("RemoteFormEntryService not found");
 			return false;
 		}
 		
@@ -273,7 +277,11 @@ public class RemoteFormEntryPendingProcessor{
 		formEntryError.setFormData(pendingQueue.getFormData());
 		
 		String classString = RemoteFormEntryException.class.getName();
-		formEntryError.setError(classString + ": " + error);
+        String shortError = classString + ": " + error;
+        if(shortError.length() > FORMENTRY_ERROR_COL_LENGTH){
+            shortError = shortError.substring(0,FORMENTRY_ERROR_COL_LENGTH-1);
+        }
+		formEntryError.setError(shortError);
 		formEntryError.setErrorDetails(errorDetails);
 
 		// create the error queue item
@@ -291,17 +299,17 @@ public class RemoteFormEntryPendingProcessor{
 	public void processRemoteFormEntryPendingQueue() throws APIException {
 		synchronized (isRunning) {
 			if (isRunning) {
-				log.warn("Processor aborting (another processor already running)");
+				log.get().warn("Processor aborting (another processor already running)");
 				return;
 			}
 			isRunning = true;
 		}
 		try {
-			log.debug("Start processing RemoteFormEntry pending queue");
+			log.get().debug("Start processing RemoteFormEntry pending queue");
 			while (processNextRemoteFormEntryPendingQueue()) {
 				// loop until queue is empty
 			}
-			log.debug("Done processing RemoteFormEntry pending queue");
+			log.get().debug("Done processing RemoteFormEntry pending queue");
 		}
 		finally {
 			isRunning = false;

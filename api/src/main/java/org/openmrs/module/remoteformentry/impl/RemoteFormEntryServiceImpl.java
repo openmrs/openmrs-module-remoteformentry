@@ -46,10 +46,7 @@ import org.openmrs.module.formentry.FormEntryQueue;
 import org.openmrs.module.formentry.FormEntryService;
 import org.openmrs.module.formentry.FormEntryUtil;
 import org.openmrs.module.formentry.PublishInfoPath;
-import org.openmrs.module.remoteformentry.RemoteFormEntryConstants;
-import org.openmrs.module.remoteformentry.RemoteFormEntryPendingQueue;
-import org.openmrs.module.remoteformentry.RemoteFormEntryService;
-import org.openmrs.module.remoteformentry.RemoteFormEntryUtil;
+import org.openmrs.module.remoteformentry.*;
 import org.openmrs.module.remoteformentry.db.RemoteFormEntryDAO;
 import org.openmrs.scheduler.SchedulerService;
 import org.openmrs.scheduler.TaskDefinition;
@@ -376,7 +373,7 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 				Iterator<PatientIdentifier> iter = patientIdentifiers.iterator();
 				while (iter.hasNext() && !found) {
 					PatientIdentifier currentIdentifier = iter.next();
-					if (currentIdentifier.equalsContent(newPersonIdentifier)) {
+                    if(RemoteFormEntryUtil.patientIdentifiersEqualsContent(currentIdentifier,newPersonIdentifier)){
 						found = true;
 						if (newPersonIdentifier.isVoided()) {
 							currentIdentifier.setVoided(true);
@@ -393,9 +390,12 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 				patient.addIdentifier(newPersonIdentifier);
 		}
 
+        // Set first identifier preferred if none of identifiers is preferred
+        patient.getPatientIdentifier().setPreferred(true);
+
 		// set the person attributes
 		RemoteFormEntryUtil.setPersonAttributes(patient, doc, xp, enterer);
-		
+
 		// set the person properties (like gender, death status, birthdate, etc)
 		RemoteFormEntryUtil.setPersonProperties(patient, doc, xp, enterer);
 
@@ -423,11 +423,11 @@ public class RemoteFormEntryServiceImpl implements RemoteFormEntryService {
 					break;
 				}
 			}
-			
+
 			if (!found && newRelationship != null)
 				Context.getPersonService().saveRelationship(newRelationship);
 		}
-		
+
 		// TODO add the program/workflow additions
 		// createProgramWorkflowEnrollment(createdPatient, doc, xp, enterer);
 

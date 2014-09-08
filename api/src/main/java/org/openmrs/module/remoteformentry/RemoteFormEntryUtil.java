@@ -1,6 +1,8 @@
 package org.openmrs.module.remoteformentry;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1019,5 +1021,28 @@ public class RemoteFormEntryUtil {
 		} catch (XPathExpressionException e) { }
 		return uuid;
 	}
+
+    /**
+     * This method compares two identifiers by checking identifier types and identifier values
+     * @Author Simplex
+     * @param pi1
+     * @param pi2
+     * @return
+     */
+    public static boolean patientIdentifiersEqualsContent(PatientIdentifier pi1,PatientIdentifier pi2) {
+        if(pi1==null && pi2==null) {
+            return true;
+        }
+
+        if(pi1==null || pi2==null) {
+            return false;
+        }
+        boolean returnValue = true;
+
+        returnValue &= pi1.getIdentifier().equals(pi2.getIdentifier());
+        returnValue &= pi1.getIdentifierType().equals(pi2.getIdentifierType());
+
+        return returnValue;
+    }
 	
 }
