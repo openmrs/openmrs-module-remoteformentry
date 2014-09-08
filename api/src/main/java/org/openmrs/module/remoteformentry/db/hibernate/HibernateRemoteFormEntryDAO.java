@@ -67,7 +67,7 @@ public class HibernateRemoteFormEntryDAO implements RemoteFormEntryDAO {
     	String username = props[0];
     	String password = props[1];
     	String database = props[2];
-    	
+
     	try {
 	    	if (!outFile.exists())
 	    		outFile.createNewFile();
@@ -97,14 +97,15 @@ public class HibernateRemoteFormEntryDAO implements RemoteFormEntryDAO {
     	}
     	
     	String output;
-    	if (OpenmrsConstants.UNIX_BASED_OPERATING_SYSTEM)
+    	if (OpenmrsConstants.UNIX_BASED_OPERATING_SYSTEM) {
     		output = execCmd(outFile.getParentFile(), commands.toArray(new String[] {}));
-		else
+        }else {
 			output = execCmd(null, commands.toArray(new String[] {}));
-    	
+        }
+
     	if (output != null && output.length() > 0) {
-    		log.debug("Exec called: " + Arrays.asList(commands));
-    		log.debug("Output of exec: " + output);
+    		log.info("Exec called: " + commands);
+    		log.info("Output of exec: " + output);
     	}
     	
     }
@@ -188,10 +189,11 @@ public class HibernateRemoteFormEntryDAO implements RemoteFormEntryDAO {
         		output = execCmd(outFolder.getParentFile(), command);
     		else
     			output = execCmd(null, command);
-        	
+        	log.warn("File name now is "+outFile.getAbsolutePath());
+            if(output != null && outFile.length()<1) log.warn("****Output is empty*********");
 	    	if (output != null && output.length() > 0) {
-	    		log.debug("Exec called: " + Arrays.toString(command));
-	    		log.debug("Output of exec: " + output);
+	    		log.info("Exec called: " + Arrays.toString(command));
+	    		log.info("Output of exec: " + output);
 	    	}
     	}
     	
@@ -223,7 +225,7 @@ public class HibernateRemoteFormEntryDAO implements RemoteFormEntryDAO {
     	
     	// get database name
     	String database = "openmrs";
-    	String connectionUrl = (String)props.get("connection.url");
+    	String connectionUrl = (String)props.get("database.url");
     	if (connectionUrl == null)
     		connectionUrl = (String)props.get("connection.url");
     	if (connectionUrl != null) {
@@ -249,7 +251,6 @@ public class HibernateRemoteFormEntryDAO implements RemoteFormEntryDAO {
 		try {
 			// Needed to add support for working directory because of a linux
 			// file system permission issue.
-			
 			Process p = (wd != null) ? Runtime.getRuntime().exec(cmdWithArguments, null, wd)
 						: Runtime.getRuntime().exec(cmdWithArguments);
 			
